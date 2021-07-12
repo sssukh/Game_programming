@@ -1,0 +1,51 @@
+#include "AnimSpriteComponent.h"
+#include "Math.h"
+
+AnimSpriteComponent::AnimSpriteComponent(Actor* owner, int drawOrder)
+	:SpriteComponent(owner, drawOrder)
+	, mCurrFrame(0.0f)
+	, mAnimFPS(24.0f)
+{
+}
+
+void AnimSpriteComponent::Update(float deltaTime)
+{
+	SpriteComponent::Update(deltaTime);
+
+	if (mAnimTextures.size() > 0)
+	{
+		//프레임 레이트와 델타 시간을 기반으로
+		// 현재 프레임 갱신
+		mCurrFrame += mAnimFPS * deltaTime;
+
+		//애니메이션 텍스처 수를 초과하면 현재 프레임을 래핑한다.
+		if (mRoutine)
+		{
+			while (mCurrFrame >= mAnimTextures.size())
+			{
+				mCurrFrame -= mAnimTextures.size();
+			}
+		}
+		else
+		{
+			if (mCurrFrame >= mAnimTextures.size())
+			{
+				mCurrFrame = mAnimTextures.size()-1;
+			}
+		}
+
+		// 현재 텍스처를 설정
+		SetTexture(mAnimTextures[static_cast<int>(mCurrFrame)]);
+	}
+}
+
+void AnimSpriteComponent::SetAnimTextures(const std::vector<SDL_Texture*>& textures)
+{
+	mAnimTextures = textures;
+	if (mAnimTextures.size() > 0)
+	{
+		// active 텍스처를 첫번째 프레임으로 설정
+		mCurrFrame = 0.0f;
+		SetTexture(mAnimTextures[0]);
+	}
+}
